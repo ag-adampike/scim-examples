@@ -8,7 +8,14 @@ services:
       - "443:8443"
     networks:
       - op-scim
-    env_file: scim.env
+    environment:
+      - OP_SESSION
+      - OP_LETSENCRYPT_DOMAIN
+      - OP_REDIS_URL
+      - OP_PRETTY_LOGS
+      - OP_DEBUG
+      - OP_LETSENCRYPT_EMAIL
+      - OP_PING_SERVER    
     restart: always
   redis:
     image: redis:latest
@@ -18,3 +25,4 @@ services:
 
 networks:
   op-scim:
+  
