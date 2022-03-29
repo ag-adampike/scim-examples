@@ -22,6 +22,10 @@ spec:
             # HTTP port (forward unencrypted traffic to this port if not using Let's Encrypt)
             - name: http
               containerPort: 3002
+          readinessProbe:
+            httpGet:
+              path: /ping
+              port: http
           volumeMounts:
             - name: scimsession
               mountPath: "/secret"

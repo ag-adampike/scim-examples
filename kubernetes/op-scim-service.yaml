@@ -4,8 +4,6 @@ metadata:
   name: op-scim-bridge
   labels:
     app: op-scim-bridge
-  annotations:
-    cloud.google.com/backend-config: '{"ports": {"443":"op-scim-bridge"}}'
 spec:
   type: NodePort
   ports:
@@ -19,7 +17,7 @@ spec:
     # for unencrypted traffic redirected from a reverse proxy or load balancer
     - protocol: TCP
       name: http
-      port: 80
+      port: 443
       targetPort: http
   selector:
     app: op-scim-bridge
