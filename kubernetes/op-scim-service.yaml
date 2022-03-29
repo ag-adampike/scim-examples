@@ -4,6 +4,8 @@ metadata:
   name: op-scim-bridge
   labels:
     app: op-scim-bridge
+  annotations:
+    cloud.google.com/backend-config: '{"ports": {"443":"op-scim-bridge"}}'
 spec:
   type: NodePort
   ports:
