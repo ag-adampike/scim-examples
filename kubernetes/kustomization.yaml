@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Base deployment with SCIM bridge container and base config
+resources:
+  - op-scim-configmap.yaml
+  - op-scim-deployment.yaml
+
+# Override base config to disable Let's Encrypt and Redis
+configMapGenerator:
+  - name: op-scim-configmap
+    behavior: merge
+    literals:
+      - OP_LETSENCRYPT_DOMAIN=""
+      - OP_REDIS_URL=
