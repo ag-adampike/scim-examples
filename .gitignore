@@ -1,6 +1,6 @@
 .DS_Store
 
-scimsession
+scimsession*
 *.deploy
 *.bak
 .idea/
