@@ -4,8 +4,6 @@ kind: Kustomization
 resources:
   - op-scim-deployment.yaml
   - op-scim-service.yaml
-  - redis-deployment.yaml
-  - redis-service.yaml
   - op-scim-config.yaml
 
 secretGenerator:
