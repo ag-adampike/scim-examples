@@ -15,8 +15,6 @@ spec:
       - path: /*
         pathType: ImplementationSpecific
         backend:
-          service:
-            name: op-scim-bridge
-            port:
-              name: http
- 
+          resource:
+            kind: ContainerPort
+            name: http
