@@ -4,33 +4,16 @@ This document will describe how to deploy the 1Password SCIM bridge using Digita
 ## Deployment Overview
 
 Deploying the SCIM bridge with App Platform comes with a few benefits:
-* App Platform will provide and host the URL for your SCIM bridge; you will not need to setup an A record or prepare a name for a URL as noted in [PREPARATION.md](https://github.com/1Password/scim-examples/blob/master/PREPARATION.md)
-* App Platfom will host the SCIM bridge for a low cost of $5/month. An additional cost will be applied for setting up Redis.
+* App Platform will provide and host the URL for your SCIM bridge; you will not need to setup an A record or prepare a name for a URL as noted in [PREPARATION.md](PREPARATION.md)
+* App Platfom will host the SCIM bridge for a low cost of $10/month. An additional cost will be applied for setting up Redis.
 * There's no need to manage the container that the SCIM bridge will be running on.
 
 ## Preparation and Deployment
 To get started with deploying the SCIM bridge using App Platform, you'll need:
-
 * Access to your organization's DigitalOcean tenant.
 * Access to your organization's GitHub account in order to fork this repository.
-* Access to create a Droplet for Redis in your organization's DigitalOcean tenant.
 
-### Step One: Setting up Redis
-
-Before you deploy the SCIM bridge using App Platform, a Redis database must be created first using DigitalOcean's managed Redis database solution.
-
-1. Under ```Manage``` in the left-hand navigation menu, select ```Databases``` or select the ```Create``` dropdown menu in the top right corner of your DigitalOcean tenant and select ```Databases```.
-2. Choose Redis as your Database Engine.
-3. Under ```Choose your Configuration```, leaving the ```Machine Type``` set to the ```Basic Nodes``` option is sufficient.
-4. Choose a datacenter.
-5. Enter a unique name for the Redis cluster (or use the default one provided).
-6. Once you've configured the other settings on this page to your liking, click ```Create a Database Cluster```.
-
-### Step Two: Building and Deploying using App Platform
-
-Now that Redis has been set up, you can start the deployment process of the SCIM bridge. Be sure that you have forked this repo before continuing:
-
-#### Setting up the forked repo:
+### Step 1: Fork this repository
 
 1. Under ```Manage``` in the left-hand navigation menu, select ```Apps``` or select the ```Create``` dropdown menu in the top right corner of your DigitalOcean tenant and select Apps.
 2. Select ```Launch Your App``` on the splash page. If you've already started using Apps, select ```Create App``` in the top right corner of the page.
@@ -44,22 +27,17 @@ Now that Redis has been set up, you can start the deployment process of the SCIM
 
 8. Add ```digitalocean-app-platform``` after the ```/``` in the Source Directory field and select ```Find Directory```
 
-#### App Configuration:
+### Step 2: Configure the app
 
-To configure your app, you will need to add the Redis database, and set two environment variables: ```OP_REDIS_URL``` and ```OP_SESSION```.
-1. Click `Add a Database`.
-2. Choose Previously Created DigitalOcean Database, and select the Redis database created in Step 1 under Database Cluster.
-3. Leave "Add app as a trusted source" checked to automatically restrict access to the app. Click Add Database.
-4. Enter the environment variables:
+1. Enter the environment variables:
     * `OP_REDIS_URL`=`${<your-redis-cluster>.REDIS_URL}`
         * Replace `<your-redis-cluster>` with the name of your Redis cluster from Step 1. This will automatically bind the Redis connection string to the environment variable.
     * `OP_SESSION`=`<base64_encoded_scimsession>`
-        *  The OP_SESSION variable should be set to the base64 encoded version of your scimsession file. Run the following command in a terminal to generate the scimsession in a base64 encoded format: ```cat /path/to/scimsession | base64 | tr -d "\n"```
+        * The OP_SESSION variable should be set to the base64 encoded version of your scimsession file. Run the following command in a terminal to generate the scimsession in a base64 encoded format: ```cat /path/to/scimsession | base64 | tr -d "\n"```
         * The base64 encoded version of your scimsession should be returned in the terminal. Copy and paste the contents and paste them as the value of the OP_SESSION variable (do not copy the ```%``` sign at the end of the output).
-4. Set the HTTP port for the app to ```3002```.
-5.  Click ```Next```.
-6.  Name your application.
-7.  Select a region for the application/container. Click ```Next```.
+3.  Click ```Next```.
+4.  Name your application.
+5.  Select a region for the application/container. Click ```Next```.
 
 #### Selecting a Tier:
 
