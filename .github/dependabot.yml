@@ -5,35 +5,10 @@
 
 version: 2
 updates:
-  - package-ecosystem: "docker" # See documentation for possible values
-    directory: "/docker/compose" # Location of package manifests
-    schedule:
-      interval: "daily"
-      time: "18:18"
-      timezone: "America/St_Johns"
-
-updates:
-- package-ecosystem: "docker" # See documentation for possible values
-  directory: "/docker/swarm" # Location of package manifests
-  schedule:
-    interval: "daily"
-
-updates:
 - package-ecosystem: "docker" # See documentation for possible values
   directory: "/kubernetes" # Location of package manifests
   schedule:
     interval: "daily"
-    time: "18:26"
+    time: "18:32"
     timezone: "America/St_Johns"
-
-updates:
-- package-ecosystem: "docker" # See documentation for possible values
-  directory: "/aws-ecsfargate-terraform/task-definitions" # Location of package manifests
-  schedule:
-    interval: "daily"
-
-updates:
-- package-ecosystem: "docker" # See documentation for possible values
-  directory: "/beta/do-app-platform-op-cli" # Location of package manifests
-  schedule:
-    interval: "daily"
+    
