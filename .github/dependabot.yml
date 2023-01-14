@@ -23,6 +23,8 @@ updates:
   directory: "/kubernetes" # Location of package manifests
   schedule:
     interval: "daily"
+    time: "18:26"
+    timezone: "America/St_Johns"
 
 updates:
 - package-ecosystem: "docker" # See documentation for possible values
