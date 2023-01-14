@@ -9,6 +9,7 @@ updates:
   directory: "/kubernetes" # Location of package manifests
   schedule:
     interval: "daily"
-    time: "18:32"
+    time: "19:08"
     timezone: "America/St_Johns"
-    
+  allow:
+    - dependency-name: "1password/scim"
