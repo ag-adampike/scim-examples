@@ -9,7 +9,7 @@
   ],
   "kubernetes": {
     "fileMatch": [
-      "^\/kubernetes\/.+\.yaml$"
+      "^kubernetes\/.+\.yaml$"
     ]
   }
 }
