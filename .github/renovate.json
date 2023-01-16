@@ -9,7 +9,18 @@
   ],
   "kubernetes": {
     "fileMatch": [
-      "^kubernetes\/.+\.yaml$"
+      "^kubernetes\\/.+\\.yaml$"
     ]
-  }
+  },
+  "regexManagers": [
+    {
+      "fileMatch": [
+        "^aws-ecsfargate-terraform\\/task-definitions\\/scim\\.json$"
+      ],
+      "matchStrings": [
+        "\\\"image\\\": \\\"(?<depName>.*?):(?<currentValue>.*?)\\\""
+      ],
+      "datasourceTemplate": "docker"
+    }
+  ]
 }
