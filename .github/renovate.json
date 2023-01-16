@@ -5,7 +5,8 @@
   ],
   "enabledManagers": [
     "docker-compose",
-    "kubernetes"
+    "kubernetes",
+    "regex"
   ],
   "kubernetes": {
     "fileMatch": [
