@@ -114,10 +114,10 @@ Create a public DNS record pointing to this address as outlined in [the preparat
 
 ## Configure Let's Encrypt
 
-After the DNS record above has propagated, run the following command to set the `OP_LETSENCRYPT_DOMAIN` environment variable to the fully-qualified domain name (FQDN) for SCIM bridge based on this record (replace `scim.example.com` with the FQDN):
+After the DNS record above has propagated, run the following command to set the `OP_TLS_DOMAIN` environment variable to the fully-qualified domain name (FQDN) for SCIM bridge based on this record (replace `scim.example.com` with the FQDN):
 
 ```bash
-kubectl set env deploy/op-scim-bridge OP_LETSENCRYPT_DOMAIN=scim.example.com
+kubectl set env deploy/op-scim-bridge OP_TLS_DOMAIN=scim.example.com
 ```
 
 SCIM bridge will restart and acquire a TLS certificate using Let's Encrypt.
@@ -139,7 +139,7 @@ You can now continue with the administration guide to configure your Identity Pr
 To update SCIM bridge, connect to your Kubernetes cluster and run the following command:
 
 ```bash
-kubectl set image deploy/op-scim-bridge op-scim-bridge=1password/scim:v2.7.3
+kubectl set image deploy/op-scim-bridge op-scim-bridge=1password/scim:v2.8.2
 ```
 
 This will upgrade your SCIM bridge to the latest version, which should take about 2-3 minutes for Kubernetes to process.
@@ -148,7 +148,7 @@ This will upgrade your SCIM bridge to the latest version, which should take abou
 
 As of October 2020, the `scim-examples` Kubernetes deployment now uses `op-scim-config.yaml` to set the configuration needed for your SCIM bridge, and has changed the deployment names from `op-scim` to `op-scim-bridge`, and `redis` to `op-scim-redis` for clarity and consistency.
 
-You’ll need to re-configure your options in `op-scim-config.yaml`, particularly `OP_LETSENCRYPT_DOMAIN`. You may also want to delete your previous `op-scim` and `redis` deployments to prevent conflict between the two versions.
+You’ll need to re-configure your options in `op-scim-config.yaml`, particularly `OP_TLS_DOMAIN`. You may also want to delete your previous `op-scim` and `redis` deployments to prevent conflict between the two versions.
 
 ```bash
 kubectl delete deployment/op-scim deployment/redis
@@ -180,31 +180,57 @@ kubectl scale deploy op-scim-bridge --replicas=0 && sleep 3 && kubectl scale dep
 
 The default resource recommendations for the SCIM bridge and Redis deployments are acceptable in most scenarios, but they fall short in high volume deployments where there is a large number of users and/or groups. We strongly recommend increasing both the SCIM bridge and Redis deployments.
 
+| Expected Provisioned Users |  Resources |
+| ------- | ------- |
+| 1-1000  |  Default  |
+| 1000-5000  |  High Volume Deployment  |
+| 5000+  |  Very High Volume Deployment  |
+
 Our current default resource requirements (defined in [op-scim-deployment](https://github.com/1Password/scim-examples/blob/master/kubernetes/op-scim-deployment.yaml#L29) and [redis-deployment.yaml](https://github.com/1Password/scim-examples/blob/master/kubernetes/redis-deployment.yaml#L21)) are:
 
-```yaml
-requested:
-  cpu: 125m
-  memory: 256M
+<details>
+  <summary>Default</summary>
+  
+  ```yaml
+  requests:
+    cpu: 125m
+    memory: 256M
 
-limits:
-  cpu: 250m
-  memory: 512M
-```
+  limits:
+    cpu: 250m
+    memory: 512M
+  ```
+</details>
 
-Below are the proposed recommendations for high volume deployments. Note that these are the recommended `requests` and `limits` values for both the SCIM bridge and Redis containers.
+Note that these are the recommended `requests` and `limits` values for both the SCIM bridge and Redis containers. These values can be scaled down again to the default values after the initial large provisioning event.
 
-```yaml
-requested:
-  cpu: 500m
-  memory: 512M
+<details>
+  <summary>High Volume Deployment</summary>
+ 
+  ```yaml
+  requests:
+    cpu: 500m
+    memory: 512M
 
-limits:
-  cpu: 1000m
-  memory: 1024M
-```
+  limits:
+    cpu: 1000m
+    memory: 1024M
+  ```
+</details>  
 
-This proposal is 4x the CPU and 2x the memory of the default values. These values can be scaled down again after the high volume deployment. 
+<details>
+  <summary>Very High Volume Deployment</summary>
+  
+  ```yaml
+  requests:
+    cpu: 1000m
+    memory: 1024M
+
+  limits:
+    cpu: 2000m
+    memory: 2048M
+  ```
+</details> 
 
 Configuring these values can be done with Kubernetes commands. You can get the names of the deployments with `kubectl get deployments`.
 
@@ -234,12 +260,16 @@ Please reach out to our [support team](https://support.1password.com/contact/) i
 
 Here are some helpful tips for customizing your 1Password SCIM bridge deployment:
 
-### External load balancer
+### Self-Managed TLS
 
-To use your own TLS certificate, terminate TLS traffic on a public-facing load balancer or reverse proxy and redirect HTTP traffic to SCIM bridge within your private network. Skip the step to [configure Let's Encrypt](#configure-lets-encrypt), or revert to the default state by setting `OP_LETSENCRYPT_DOMAIN` to `""`:
+There are two ways to use a self-managed TLS certificate, which disables Let's Encrypt functionality.
+
+#### Load Balancer
+
+The first is to terminate TLS traffic on a public-facing load balancer or reverse proxy and redirect HTTP traffic to SCIM bridge within your private network. Skip the step to [configure Let's Encrypt](#configure-lets-encrypt), or revert to the default state by setting `OP_TLS_DOMAIN` to `""`:
 
 ```bash
-kubectl set env deploy/op-scim-bridge OP_LETSENCRYPT_DOMAIN=""
+kubectl set env deploy/op-scim-bridge OP_TLS_DOMAIN=""
 ```
 
 Modify [`op-scim-service.yaml`](./op-scim-service.yaml) to use the alternate `http` port for the Service as noted within the manifest. Traffic from your TLS endpoint should be directed to this port (80, by default). If SCIM bridge has already been deployed, apply the amended Service manifest:
@@ -249,6 +279,27 @@ kubectl apply -f ./op-scim-service.yaml
 ```
 
 In this configuration, 1Password SCIM bridge will listen for unencrypted traffic on the `http` port of the Pod.
+
+#### Manually-Provided Key/Certificate
+
+Alternatively, you can create a TLS Secret containing your key and certificate files, which can then be used by your SCIM bridge. This will also disable Let's Encrypt functionality.
+
+Assuming these files exist in the working directory, create the Secret and set the `OP_TLS_CERT_FILE` and `OP_TLS_KEY_FILE` variables to redeploy SCIM bridge using your certificate:
+
+```bash
+kubectl create secret tls op-scim-tls --cert=./certificate.pem --key=./key.pem
+kubectl set env deploy op-scim-bridge \
+  OP_TLS_CERT_FILE="/secrets/tls.crt" \
+  OP_TLS_KEY_FILE="/secrets/tls.key"
+```
+
+> **Note**
+>
+> If your certificate and key files are located elsewhere or have different names, replace `./certificate.pem` and `./key.pem` with the paths to these files, i.e.:
+>
+> ```sh
+> kubectl create secret tls op-scim-tls --cert=path/to/cert/file --key=path/to/key/file
+> ```
 
 ### External Redis
 
